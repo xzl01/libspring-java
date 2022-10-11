@@ -1,0 +1,14 @@
+Description: Do not fail the build on compilation warnings
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: no
+--- a/build.gradle
++++ b/build.gradle
+@@ -95,7 +95,7 @@
+ 		"-Xlint:dep-ann", "-Xlint:divzero", "-Xlint:empty", "-Xlint:finally",
+ 		"-Xlint:overrides", "-Xlint:path", "-Xlint:processing", "-Xlint:static",
+ 		"-Xlint:try", "-Xlint:fallthrough", "-Xlint:rawtypes", "-Xlint:deprecation",
+-		"-Xlint:unchecked", "-Xlint:-options", "-Werror"
++		"-Xlint:unchecked", "-Xlint:-options"
+ 	]
+ 
+ 	compileTestJava.options*.compilerArgs = [

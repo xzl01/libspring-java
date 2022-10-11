@@ -1,0 +1,14 @@
+Description: Fixes the compatibility with the version of Apache POI in Debian
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/spring-webmvc/src/main/java/org/springframework/web/servlet/view/document/AbstractExcelView.java
++++ b/spring-webmvc/src/main/java/org/springframework/web/servlet/view/document/AbstractExcelView.java
+@@ -217,7 +217,7 @@
+ 	 * @param text the text to put in the cell
+ 	 */
+ 	protected void setText(HSSFCell cell, String text) {
+-		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
++		cell.setCellType(org.apache.poi.ss.usermodel.CellType.STRING);
+ 		cell.setCellValue(text);
+ 	}
+ 

@@ -1,0 +1,102 @@
+Description: Fixes the compatibility with the latest version of the Servlet API
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: no
+--- a/spring-web/src/main/java/org/springframework/web/util/ContentCachingResponseWrapper.java
++++ b/spring-web/src/main/java/org/springframework/web/util/ContentCachingResponseWrapper.java
+@@ -250,6 +250,14 @@
+ 		public void write(byte[] b, int off, int len) throws IOException {
+ 			content.write(b, off, len);
+ 		}
++
++		@Override
++		public boolean isReady() {
++			return true;
++		}
++
++		@Override
++		public void setWriteListener(javax.servlet.WriteListener listener) { }
+ 	}
+ 
+ 
+--- a/spring-web/src/main/java/org/springframework/web/util/ContentCachingRequestWrapper.java
++++ b/spring-web/src/main/java/org/springframework/web/util/ContentCachingRequestWrapper.java
+@@ -221,6 +221,21 @@
+ 			}
+ 			return ch;
+ 		}
++
++		@Override
++		public boolean isReady() {
++			return is.isReady();
++		}
++
++		@Override
++		public boolean isFinished() {
++			return is.isFinished();
++		}
++
++		@Override
++		public void setReadListener(javax.servlet.ReadListener listener) {
++			is.setReadListener(listener);
++		}
+ 	}
+ 
+ }
+--- a/spring-test/src/main/java/org/springframework/mock/web/DelegatingServletInputStream.java
++++ b/spring-test/src/main/java/org/springframework/mock/web/DelegatingServletInputStream.java
+@@ -65,4 +65,17 @@
+ 		this.sourceStream.close();
+ 	}
+ 
++	@Override
++	public boolean isReady() {
++		return true;
++	}
++
++	@Override
++	public boolean isFinished() {
++		return false;
++	}
++
++	@Override
++	public void setReadListener(javax.servlet.ReadListener listener) {
++	}
+ }
+--- a/spring-test/src/main/java/org/springframework/mock/web/DelegatingServletOutputStream.java
++++ b/spring-test/src/main/java/org/springframework/mock/web/DelegatingServletOutputStream.java
+@@ -71,4 +71,13 @@
+ 		this.targetStream.close();
+ 	}
+ 
++	@Override
++	public boolean isReady() {
++		return true;
++	}
++
++	@Override
++	public void setWriteListener(javax.servlet.WriteListener listener) {
++	}
++
+ }
+--- a/spring-test/src/main/java/org/springframework/mock/web/MockHttpServletRequest.java
++++ b/spring-test/src/main/java/org/springframework/mock/web/MockHttpServletRequest.java
+@@ -1252,4 +1252,8 @@
+ 		return result;
+ 	}
+ 
++	@Override
++	public <T extends javax.servlet.http.HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
++		throw new UnsupportedOperationException();
++	}
+ }
+--- a/spring-test/src/main/java/org/springframework/mock/web/MockServletContext.java
++++ b/spring-test/src/main/java/org/springframework/mock/web/MockServletContext.java
+@@ -677,4 +677,8 @@
+ 		throw new UnsupportedOperationException();
+ 	}
+ 
++	@Override
++	public String getVirtualServerName() {
++		throw new UnsupportedOperationException();
++	}
+ }

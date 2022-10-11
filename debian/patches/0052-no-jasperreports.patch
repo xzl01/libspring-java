@@ -1,0 +1,30 @@
+From: Andrej Shadura <andrewsh@debian.org>
+Date: Wed, 27 Feb 2019 14:39:32 +0100
+Subject: Don’t build jasperreports support since it FTBFS and likely to be removed from Buster
+Forwarded: not-needed
+
+--- a/build.gradle
++++ b/build.gradle
+@@ -682,6 +682,7 @@
+ 		main {
+ 			java {
+ 				exclude "**/caffeine/*"
++				exclude "**/jasperreports/*"
+ 			}
+ 		}
+ 	}
+@@ -920,6 +921,14 @@
+ 		testRuntime("org.python:jython-standalone:2.5.3")
+ 		testRuntime("org.webjars:underscorejs:1.8.3")
+ 	}
++
++	sourceSets {
++		main {
++			java {
++				exclude "**/jasperreports/*"
++			}
++		}
++	}
+ }
+ 
+ project("spring-webmvc-tiles2") {

@@ -1,0 +1,46 @@
+Description: Ignore the Money API support (not in Debian)
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/spring-context/src/main/java/org/springframework/format/support/DefaultFormattingConversionService.java
++++ b/spring-context/src/main/java/org/springframework/format/support/DefaultFormattingConversionService.java
+@@ -21,9 +21,6 @@
+ import org.springframework.format.datetime.DateFormatterRegistrar;
+ import org.springframework.format.datetime.joda.JodaTimeFormatterRegistrar;
+ import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
+-import org.springframework.format.number.money.CurrencyUnitFormatter;
+-import org.springframework.format.number.money.Jsr354NumberFormatAnnotationFormatterFactory;
+-import org.springframework.format.number.money.MonetaryAmountFormatter;
+ import org.springframework.format.number.NumberFormatAnnotationFormatterFactory;
+ import org.springframework.util.ClassUtils;
+ import org.springframework.util.StringValueResolver;
+@@ -104,13 +101,6 @@
+ 		// Default handling of number values
+ 		formatterRegistry.addFormatterForFieldAnnotation(new NumberFormatAnnotationFormatterFactory());
+ 
+-		// Default handling of monetary values
+-		if (jsr354Present) {
+-			formatterRegistry.addFormatter(new CurrencyUnitFormatter());
+-			formatterRegistry.addFormatter(new MonetaryAmountFormatter());
+-			formatterRegistry.addFormatterForFieldAnnotation(new Jsr354NumberFormatAnnotationFormatterFactory());
+-		}
+-
+ 		// Default handling of date-time values
+ 		if (jsr310Present) {
+ 			// just handling JSR-310 specific date and time types
+--- a/build.gradle
++++ b/build.gradle
+@@ -489,6 +489,14 @@
+ 		testCompile("org.apache.commons:commons-pool2:2.4.2")
+ 		testCompile("org.slf4j:slf4j-api:${slf4jVersion}")
+ 	}
++
++	sourceSets {
++		main {
++			java {
++				exclude "**/money/*"
++			}
++		}
++	}
+ }
+ 
+ project("spring-oxm") {

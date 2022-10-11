@@ -1,0 +1,131 @@
+Description: Removes the optional dependency on ProjectReactor
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -574,6 +574,16 @@
+ 		testCompile("org.slf4j:slf4j-jcl:${slf4jVersion}")
+ 		testCompile("xmlunit:xmlunit:${xmlunitVersion}")
+ 	}
++
++	sourceSets {
++        	main {
++                	java {
++				exclude "**/tcp/reactor/*"
++				exclude "**/simp/stomp/*"
++				exclude "**/simp/config/StompBrokerRelayRegistration.java"
++			}
++		}
++	}
+ }
+ 
+ project("spring-tx") {
+--- a/spring-messaging/src/main/java/org/springframework/messaging/simp/config/AbstractMessageBrokerConfiguration.java
++++ b/spring-messaging/src/main/java/org/springframework/messaging/simp/config/AbstractMessageBrokerConfiguration.java
+@@ -41,7 +41,6 @@
+ import org.springframework.messaging.simp.annotation.support.SimpAnnotationMethodMessageHandler;
+ import org.springframework.messaging.simp.broker.AbstractBrokerMessageHandler;
+ import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
+-import org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler;
+ import org.springframework.messaging.simp.user.DefaultUserDestinationResolver;
+ import org.springframework.messaging.simp.user.MultiServerUserRegistry;
+ import org.springframework.messaging.simp.user.SimpUserRegistry;
+@@ -303,22 +302,7 @@
+ 
+ 	@Bean
+ 	public AbstractBrokerMessageHandler stompBrokerRelayMessageHandler() {
+-		StompBrokerRelayMessageHandler handler = getBrokerRegistry().getStompBrokerRelay(brokerChannel());
+-		if (handler == null) {
+-			return new NoOpBrokerMessageHandler();
+-		}
+-		Map<String, MessageHandler> subscriptions = new HashMap<String, MessageHandler>(1);
+-		String destination = getBrokerRegistry().getUserDestinationBroadcast();
+-		if (destination != null) {
+-			subscriptions.put(destination, userDestinationMessageHandler());
+-		}
+-		destination = getBrokerRegistry().getUserRegistryBroadcast();
+-		if (destination != null) {
+-			subscriptions.put(destination, userRegistryMessageHandler());
+-		}
+-		handler.setSystemSubscriptions(subscriptions);
+-		updateUserDestinationResolver(handler);
+-		return handler;
++		throw new UnsupportedOperationException("STOMP support has been disabled due to dependencies issues with Java 11");
+ 	}
+ 
+ 	@Bean
+--- a/spring-messaging/src/main/java/org/springframework/messaging/simp/config/MessageBrokerRegistry.java
++++ b/spring-messaging/src/main/java/org/springframework/messaging/simp/config/MessageBrokerRegistry.java
+@@ -22,7 +22,6 @@
+ import org.springframework.messaging.MessageChannel;
+ import org.springframework.messaging.SubscribableChannel;
+ import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
+-import org.springframework.messaging.simp.stomp.StompBrokerRelayMessageHandler;
+ import org.springframework.util.Assert;
+ import org.springframework.util.PathMatcher;
+ 
+@@ -41,8 +40,6 @@
+ 
+ 	private SimpleBrokerRegistration simpleBrokerRegistration;
+ 
+-	private StompBrokerRelayRegistration brokerRelayRegistration;
+-
+ 	private final ChannelRegistration brokerChannelRegistration = new ChannelRegistration();
+ 
+ 	private String[] applicationDestinationPrefixes;
+@@ -73,17 +70,6 @@
+ 	}
+ 
+ 	/**
+-	 * Enable a STOMP broker relay and configure the destination prefixes supported by the
+-	 * message broker. Check the STOMP documentation of the message broker for supported
+-	 * destinations.
+-	 */
+-	public StompBrokerRelayRegistration enableStompBrokerRelay(String... destinationPrefixes) {
+-		this.brokerRelayRegistration = new StompBrokerRelayRegistration(
+-				this.clientInboundChannel, this.clientOutboundChannel, destinationPrefixes);
+-		return this.brokerRelayRegistration;
+-	}
+-
+-	/**
+ 	 * Customize the channel used to send messages from the application to the message
+ 	 * broker. By default, messages from the application to the message broker are sent
+ 	 * synchronously, which means application code sending a message will find out
+@@ -99,13 +85,11 @@
+ 	}
+ 
+ 	protected String getUserDestinationBroadcast() {
+-		return (this.brokerRelayRegistration != null ?
+-				this.brokerRelayRegistration.getUserDestinationBroadcast() : null);
++		return null;
+ 	}
+ 
+ 	protected String getUserRegistryBroadcast() {
+-		return (this.brokerRelayRegistration != null ?
+-				this.brokerRelayRegistration.getUserRegistryBroadcast() : null);
++		return null;
+ 	}
+ 
+ 	/**
+@@ -189,7 +173,7 @@
+ 
+ 
+ 	protected SimpleBrokerMessageHandler getSimpleBroker(SubscribableChannel brokerChannel) {
+-		if (this.simpleBrokerRegistration == null && this.brokerRelayRegistration == null) {
++		if (this.simpleBrokerRegistration == null) {
+ 			enableSimpleBroker();
+ 		}
+ 		if (this.simpleBrokerRegistration != null) {
+@@ -200,12 +184,5 @@
+ 		}
+ 		return null;
+ 	}
+-
+-	protected StompBrokerRelayMessageHandler getStompBrokerRelay(SubscribableChannel brokerChannel) {
+-		if (this.brokerRelayRegistration != null) {
+-			return this.brokerRelayRegistration.getMessageHandler(brokerChannel);
+-		}
+-		return null;
+-	}
+ 
+ }

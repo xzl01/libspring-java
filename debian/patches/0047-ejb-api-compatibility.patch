@@ -1,0 +1,25 @@
+Description: Replaces the javax.ejb:ejb-api dependency with equivalent Geronimo Spec artifacts.
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -472,7 +472,8 @@
+ 		compile(files(project(":spring-core").cglibRepackJar))
+ 		optional(project(":spring-instrument"))
+ 		optional("javax.inject:javax.inject:1")
+-		optional("javax.ejb:ejb-api:${ejbVersion}")
++		optional("org.apache.geronimo.specs:geronimo-ejb_3.2_spec:debian")
++		optional("org.apache.geronimo.specs:geronimo-interceptor_3.0_spec:debian")
+ 		optional("javax.enterprise.concurrent:javax.enterprise.concurrent-api:1.0")
+ 		optional("javax.money:money-api:1.0.1")
+ 		optional("org.eclipse.persistence:javax.persistence:2.0.0")
+@@ -581,7 +582,8 @@
+ 		optional(project(":spring-context"))  // for JCA, @EnableTransactionManagement
+ 		optional("javax.transaction:javax.transaction-api:${jtaVersion}")
+ 		optional("javax.resource:connector-api:1.5")
+-		optional("javax.ejb:ejb-api:${ejbVersion}")
++		optional("org.apache.geronimo.specs:geronimo-ejb_3.2_spec:debian")
++		optional("org.apache.geronimo.specs:geronimo-interceptor_3.0_spec:debian")
+ 		optional("com.ibm.websphere:uow:6.0.2.17")
+ 		testCompile("org.aspectj:aspectjweaver:${aspectjVersion}")
+ 		testCompile("org.eclipse.persistence:javax.persistence:2.0.0")

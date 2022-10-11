@@ -1,0 +1,16 @@
+Description: No longer build the deprecated classes dedicated to JRuby scripting
+ to reduce the dependency graph og libspring-java. JRuby can still be used with
+ the javax.script API
+Author: Emmanuel Bour <ebourg@apache.org>
+Forwarded: not-needed
+Bug-Debian: https://bugs.debian.org/979723
+--- a/build.gradle
++++ b/build.gradle
+@@ -493,6 +493,7 @@
+ 	sourceSets {
+ 		main {
+ 			java {
++				exclude "**/jruby/*"
+ 				exclude "**/money/*"
+ 			}
+ 		}

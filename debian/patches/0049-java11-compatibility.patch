@@ -1,0 +1,222 @@
+Description: Fixes the compatibility with Java 11 (CORBA support removed, independent JavaEE APIs)
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -344,6 +344,8 @@
+ 		compile(files(cglibRepackJar))
+ 		compile(files(objenesisRepackJar))
+ 		compile("commons-logging:commons-logging:1.2")
++		compile("javax.xml.bind:jaxb-api:debian")
++		compile("javax.activation:javax.activation-api:debian")
+ 		optional("commons-codec:commons-codec:1.10")
+ 		optional("org.aspectj:aspectjweaver:${aspectjVersion}")
+ 		optional("net.sf.jopt-simple:jopt-simple:5.0.3")
+@@ -484,6 +486,8 @@
+ 		optional("org.codehaus.groovy:groovy-all:${groovyVersion}")
+ 		optional("org.beanshell:bsh:2.0b5")
+ 		optional("org.jruby:jruby:${jrubyVersion}")
++		optional("javax.xml.ws:jaxws-api:debian")
++		optional("org.apache.geronimo.specs:geronimo-annotation_1.3_spec:debian")
+ 		testCompile("javax.inject:javax.inject-tck:1")
+ 		testCompile("org.javamoney:moneta:1.1")
+ 		testCompile("commons-dbcp:commons-dbcp:1.4")
+@@ -715,6 +719,7 @@
+ 		optional("javax.el:javax.el-api:2.2.5")
+ 		optional("javax.faces:javax.faces-api:2.2")
+ 		optional("javax.validation:validation-api:1.0.0.GA")
++                optional("javax.jws:javax.jws-api:debian")
+ 		optional("org.codehaus.groovy:groovy-all:${groovyVersion}")
+ 		optional("com.caucho:hessian:4.0.38")
+ 		optional("commons-fileupload:commons-fileupload:${fileuploadVersion}")
+--- a/spring-context/src/main/java/org/springframework/remoting/rmi/RmiClientInterceptorUtils.java
++++ b/spring-context/src/main/java/org/springframework/remoting/rmi/RmiClientInterceptorUtils.java
+@@ -29,10 +29,6 @@
+ import org.aopalliance.intercept.MethodInvocation;
+ import org.apache.commons.logging.Log;
+ import org.apache.commons.logging.LogFactory;
+-import org.omg.CORBA.COMM_FAILURE;
+-import org.omg.CORBA.CompletionStatus;
+-import org.omg.CORBA.NO_RESPONSE;
+-import org.omg.CORBA.SystemException;
+ 
+ import org.springframework.remoting.RemoteAccessException;
+ import org.springframework.remoting.RemoteConnectFailureException;
+@@ -184,8 +180,7 @@
+ 	 * @param ex the RMI exception to check
+ 	 */
+ 	private static boolean isCorbaConnectFailure(Throwable ex) {
+-		return ((ex instanceof COMM_FAILURE || ex instanceof NO_RESPONSE) &&
+-				((SystemException) ex).completed == CompletionStatus.COMPLETED_NO);
++		return false;
+ 	}
+ 
+ }
+--- a/spring-context/src/main/java/org/springframework/remoting/rmi/JndiRmiClientInterceptor.java
++++ b/spring-context/src/main/java/org/springframework/remoting/rmi/JndiRmiClientInterceptor.java
+@@ -21,12 +21,9 @@
+ import java.rmi.RemoteException;
+ import javax.naming.Context;
+ import javax.naming.NamingException;
+-import javax.rmi.PortableRemoteObject;
+ 
+ import org.aopalliance.intercept.MethodInterceptor;
+ import org.aopalliance.intercept.MethodInvocation;
+-import org.omg.CORBA.OBJECT_NOT_EXIST;
+-import org.omg.CORBA.SystemException;
+ 
+ import org.springframework.aop.support.AopUtils;
+ import org.springframework.beans.factory.InitializingBean;
+@@ -229,13 +226,8 @@
+ 		try {
+ 			Object stub = lookup();
+ 			if (getServiceInterface() != null && !(stub instanceof RmiInvocationHandler)) {
+-				try {
+-					stub = PortableRemoteObject.narrow(stub, getServiceInterface());
+-				}
+-				catch (ClassCastException ex) {
+-					throw new RemoteLookupFailureException(
+-							"Could not narrow RMI stub to service interface [" + getServiceInterface().getName() + "]", ex);
+-				}
++				throw new RemoteLookupFailureException(
++						"Could not narrow RMI stub to service interface [" + getServiceInterface().getName() + "]");
+ 			}
+ 			return stub;
+ 		}
+@@ -306,14 +298,6 @@
+ 				throw ex;
+ 			}
+ 		}
+-		catch (SystemException ex) {
+-			if (isConnectFailure(ex)) {
+-				return handleRemoteConnectFailure(invocation, ex);
+-			}
+-			else {
+-				throw ex;
+-			}
+-		}
+ 		finally {
+ 			getJndiTemplate().releaseContext(ctx);
+ 		}
+@@ -331,17 +315,6 @@
+ 	}
+ 
+ 	/**
+-	 * Determine whether the given CORBA exception indicates a connect failure.
+-	 * <p>The default implementation checks for CORBA's
+-	 * {@link org.omg.CORBA.OBJECT_NOT_EXIST} exception.
+-	 * @param ex the RMI exception to check
+-	 * @return whether the exception should be treated as connect failure
+-	 */
+-	protected boolean isConnectFailure(SystemException ex) {
+-		return (ex instanceof OBJECT_NOT_EXIST);
+-	}
+-
+-	/**
+ 	 * Refresh the stub and retry the remote invocation if necessary.
+ 	 * <p>If not configured to refresh on connect failure, this method
+ 	 * simply rethrows the original exception.
+@@ -402,9 +375,6 @@
+ 			catch (RemoteException ex) {
+ 				throw convertRmiAccessException(ex, invocation.getMethod());
+ 			}
+-			catch (SystemException ex) {
+-				throw convertCorbaAccessException(ex, invocation.getMethod());
+-			}
+ 			catch (InvocationTargetException ex) {
+ 				throw ex.getTargetException();
+ 			}
+@@ -423,9 +393,6 @@
+ 				if (targetEx instanceof RemoteException) {
+ 					throw convertRmiAccessException((RemoteException) targetEx, invocation.getMethod());
+ 				}
+-				else if (targetEx instanceof SystemException) {
+-					throw convertCorbaAccessException((SystemException) targetEx, invocation.getMethod());
+-				}
+ 				else {
+ 					throw targetEx;
+ 				}
+@@ -483,27 +450,4 @@
+ 		return RmiClientInterceptorUtils.convertRmiAccessException(method, ex, isConnectFailure(ex), getJndiName());
+ 	}
+ 
+-	/**
+-	 * Convert the given CORBA SystemException that happened during remote access
+-	 * to Spring's RemoteAccessException if the method signature does not declare
+-	 * RemoteException. Else, return the SystemException wrapped in a RemoteException.
+-	 * @param method the invoked method
+-	 * @param ex the RemoteException that happened
+-	 * @return the exception to be thrown to the caller
+-	 */
+-	private Exception convertCorbaAccessException(SystemException ex, Method method) {
+-		if (ReflectionUtils.declaresException(method, RemoteException.class)) {
+-			// A traditional RMI service: wrap CORBA exceptions in standard RemoteExceptions.
+-			return new RemoteException("Failed to access CORBA service [" + getJndiName() + "]", ex);
+-		}
+-		else {
+-			if (isConnectFailure(ex)) {
+-				return new RemoteConnectFailureException("Could not connect to CORBA service [" + getJndiName() + "]", ex);
+-			}
+-			else {
+-				return new RemoteAccessException("Could not access CORBA service [" + getJndiName() + "]", ex);
+-			}
+-		}
+-	}
+-
+ }
+--- a/spring-context/src/main/java/org/springframework/remoting/rmi/JndiRmiServiceExporter.java
++++ b/spring-context/src/main/java/org/springframework/remoting/rmi/JndiRmiServiceExporter.java
+@@ -21,7 +21,6 @@
+ import java.rmi.RemoteException;
+ import java.util.Properties;
+ import javax.naming.NamingException;
+-import javax.rmi.PortableRemoteObject;
+ 
+ import org.springframework.beans.factory.DisposableBean;
+ import org.springframework.beans.factory.InitializingBean;
+@@ -117,9 +116,9 @@
+ 
+ 		// Initialize and cache exported object.
+ 		this.exportedObject = getObjectToExport();
+-		PortableRemoteObject.exportObject(this.exportedObject);
++		throw new UnsupportedOperationException("PortableRemoteObject.exportObject()");
+ 
+-		rebind();
++		//rebind();
+ 	}
+ 
+ 	/**
+@@ -143,7 +142,7 @@
+ 			logger.info("Unbinding RMI service from JNDI location [" + this.jndiName + "]");
+ 		}
+ 		this.jndiTemplate.unbind(this.jndiName);
+-		PortableRemoteObject.unexportObject(this.exportedObject);
++		throw new UnsupportedOperationException("PortableRemoteObject.unexportObject()");
+ 	}
+ 
+ }
+--- a/spring-context/src/main/java/org/springframework/ejb/access/AbstractRemoteSlsbInvokerInterceptor.java
++++ b/spring-context/src/main/java/org/springframework/ejb/access/AbstractRemoteSlsbInvokerInterceptor.java
+@@ -22,7 +22,6 @@
+ import javax.ejb.EJBHome;
+ import javax.ejb.EJBObject;
+ import javax.naming.NamingException;
+-import javax.rmi.PortableRemoteObject;
+ 
+ import org.aopalliance.intercept.MethodInvocation;
+ 
+@@ -98,13 +97,7 @@
+ 	protected Object lookup() throws NamingException {
+ 		Object homeObject = super.lookup();
+ 		if (this.homeInterface != null) {
+-			try {
+-				homeObject = PortableRemoteObject.narrow(homeObject, this.homeInterface);
+-			}
+-			catch (ClassCastException ex) {
+-				throw new RemoteLookupFailureException(
+-						"Could not narrow EJB home stub to home interface [" + this.homeInterface.getName() + "]", ex);
+-			}
++			throw new RemoteLookupFailureException("Could not narrow EJB home stub to home interface [" + this.homeInterface.getName() + "]");
+ 		}
+ 		return homeObject;
+ 	}

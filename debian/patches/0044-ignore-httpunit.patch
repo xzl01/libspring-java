@@ -1,0 +1,21 @@
+Description: Ignore the HtmlUnit classes
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -1062,6 +1062,15 @@
+ 		testRuntime("log4j:log4j:${log4jVersion}")
+ 	}
+ 
++	sourceSets {
++		main {
++			java {
++				exclude "**/htmlunit/*"
++			}
++		}
++	}
++
++
+ 	task testNG(type: Test) {
+ 		description = 'Runs TestNG tests.'
+ 		useTestNG()

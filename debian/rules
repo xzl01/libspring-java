@@ -1,0 +1,42 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/pkg-info.mk
+export SOURCE_DATE_EPOCH
+
+JAVA_HOME       := /usr/lib/jvm/default-java
+
+MODULES = aop beans context context-support core expression instrument jdbc jms messaging orm oxm test tx web webmvc webmvc-portlet
+
+%:
+	dh $@ --buildsystem=gradle
+
+override_dh_auto_build:
+	dh_auto_build -- jar -x test -x check \
+	                 -x :spring-orm-hibernate4:compileJava \
+	                 -x :spring-orm-hibernate5:compileJava \
+	                 -x :spring-instrument-tomcat:compileJava \
+	                 -x :spring-webmvc-tiles2:compileJava \
+	                 -x :spring-websocket:compileJava
+
+override_dh_auto_clean:
+	dh_auto_clean
+	mh_clean
+
+override_dh_auto_install:
+	# Install the Bill Of Materials in the core package
+	mh_installpom -plibspring-core-java --relocate=org.springframework:spring-framework-bom:3.x spring-framework-bom/build/debian/spring-framework-bom.pom
+
+	# Install the artifacts in their respective packages
+	for MYMOD in $(MODULES); do \
+		BASENAME=`echo $$MYMOD | sed "s/tx/transaction/" | sed "s/webmvc-portlet/web-portlet/" | sed "s/webmvc/web-servlet/"`; \
+		USJNAME=`echo $$BASENAME | sed "s/-/./" ` ; \
+		JAR=`echo spring-$$MYMOD/build/libs/spring-$$MYMOD*.jar`; \
+		POM=`echo spring-$$MYMOD/build/debian/spring-$$MYMOD.pom`; \
+		PACKAGE=`echo libspring-$$BASENAME-java`; \
+		mh_installpom -p$$PACKAGE --relocate=org.springframework:spring-$$MYMOD:3.x $$POM; \
+		mh_installjar -p$$PACKAGE -nspring3-$$USJNAME --usj-version=3.x --java-lib $$POM $$JAR ; \
+	done
+
+	# Install the spring-aspects artifact in the aop package
+	mh_installpom -plibspring-aop-java --relocate=org.springframework:spring-aspects:3.x spring-aspects/build/debian/spring-aspects.pom
+	mh_installjar -plibspring-aop-java -nspring3-aspects --usj-version=3.x --java-lib spring-aspects/build/debian/spring-aspects.pom spring-aspects/build/libs/spring-aspects*.jar

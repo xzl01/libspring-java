@@ -1,0 +1,3 @@
+version=3
+opts=repack,compression=xz,dversionmangle=s/\.RELEASE// \
+https://github.com/spring-projects/spring-framework/tags .*/v([\d\.]+).RELEASE.tar.gz

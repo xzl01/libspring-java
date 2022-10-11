@@ -1,0 +1,30 @@
+Description: Ignore the asciidoctor plugin (not in Debian)
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -1138,24 +1138,11 @@
+ configure(rootProject) {
+ 	description = "Spring Framework"
+ 
+-	apply plugin: "org.asciidoctor.convert"
+ 	apply plugin: "groovy"
+ 
+ 	// apply plugin: "detect-split-packages"
+ 	//apply from: "${gradleScriptDir}/jdiff.gradle"
+ 
+-	asciidoctor {
+-		sourceDir project.file('src/asciidoc')
+-		separateOutputDirs = false
+-		backends = ['docbook']
+-		options doctype: 'book', eruby: 'erubis'
+-		attributes 'spring-version': project.version, 'revnumber': project.version, 'docinfo': ""
+-	}
+-
+-	afterEvaluate {
+-		tasks.findAll { it.name.startsWith("reference") }.each{ it.dependsOn.add("asciidoctor") }
+-	}
+-
+ 	// TODO: DetectSplitPackagesPlugin fails in line 154 due to method not found on java.io.File.
+ 	// TODO: Possibly related to user rights or OS differences; passes on local Windows machine.
+ 	// detectSplitPackages {

@@ -1,0 +1,48 @@
+Description: Disable the generation of the docbook documentation.
+ It requires the docbook-reference-plugin which isn't in Debian.
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/build.gradle
++++ b/build.gradle
+@@ -1139,7 +1139,6 @@
+ 	description = "Spring Framework"
+ 
+ 	apply plugin: "org.asciidoctor.convert"
+-	apply plugin: "docbook-reference"
+ 	apply plugin: "groovy"
+ 
+ 	// apply plugin: "detect-split-packages"
+@@ -1153,13 +1152,6 @@
+ 		attributes 'spring-version': project.version, 'revnumber': project.version, 'docinfo': ""
+ 	}
+ 
+-	reference {
+-		sourceDir = asciidoctor.outputDir
+-		pdfFilename = "spring-framework-reference.pdf"
+-		epubFilename = "spring-framework-reference.epub"
+-		expandPlaceholders = ""
+-	}
+-
+ 	afterEvaluate {
+ 		tasks.findAll { it.name.startsWith("reference") }.each{ it.dependsOn.add("asciidoctor") }
+ 	}
+@@ -1233,7 +1225,7 @@
+ 		}
+ 	}
+ 
+-	task docsZip(type: Zip, dependsOn: 'reference') {
++	task docsZip(type: Zip) {
+ 		group = "Distribution"
+ 		baseName = "spring-framework"
+ 		classifier = "docs"
+@@ -1247,10 +1239,6 @@
+ 		from (api) {
+ 			into "javadoc-api"
+ 		}
+-
+-		from (reference) {
+-			into "spring-framework-reference"
+-		}
+ 	}
+ 
+ 	task schemaZip(type: Zip) {

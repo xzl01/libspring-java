@@ -1,0 +1,15 @@
+Description: use a reproducible copyright date in the JAR metadata
+Author: tony mancill <tmancill@debian.org>
+Forwarded: not-needed
+
+--- a/build.gradle
++++ b/build.gradle
+@@ -230,7 +230,7 @@
+ 			include "license.txt"
+ 			include "notice.txt"
+ 			into "META-INF"
+-			expand(copyright: new Date().format("yyyy"), version: project.version)
++			expand(copyright: new Date(Long.valueOf(System.getenv("SOURCE_DATE_EPOCH")) * 1000).format("yyyy"), version: project.version)
+ 		}
+ 	}
+ 

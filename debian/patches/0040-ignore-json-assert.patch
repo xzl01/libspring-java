@@ -1,0 +1,50 @@
+Description: Ignore the code relying on jsonassert (depends on the non-free json.org library)
+Author: Emmanuel Bourg <ebourg@apache.org>
+Forwarded: not-needed
+--- a/spring-test/src/main/java/org/springframework/test/util/JsonExpectationsHelper.java
++++ b/spring-test/src/main/java/org/springframework/test/util/JsonExpectationsHelper.java
+@@ -16,7 +16,7 @@
+ 
+ package org.springframework.test.util;
+ 
+-import org.skyscreamer.jsonassert.JSONAssert;
++//import org.skyscreamer.jsonassert.JSONAssert;
+ 
+ /**
+  * A helper class for assertions on JSON content.
+@@ -41,7 +41,7 @@
+ 	 * @see #assertJsonEqual(String, String, boolean)
+ 	 */
+ 	public void assertJsonEqual(String expected, String actual) throws Exception {
+-		assertJsonEqual(expected, actual, false);
++//		assertJsonEqual(expected, actual, false);
+ 	}
+ 
+ 	/**
+@@ -61,7 +61,7 @@
+ 	 * @since 4.2
+ 	 */
+ 	public void assertJsonEqual(String expected, String actual, boolean strict) throws Exception {
+-		JSONAssert.assertEquals(expected, actual, strict);
++//		JSONAssert.assertEquals(expected, actual, strict);
+ 	}
+ 
+ 	/**
+@@ -76,7 +76,7 @@
+ 	 * @see #assertJsonNotEqual(String, String, boolean)
+ 	 */
+ 	public void assertJsonNotEqual(String expected, String actual) throws Exception {
+-		assertJsonNotEqual(expected, actual, false);
++//		assertJsonNotEqual(expected, actual, false);
+ 	}
+ 
+ 	/**
+@@ -96,7 +96,7 @@
+ 	 * @since 4.2
+ 	 */
+ 	public void assertJsonNotEqual(String expected, String actual, boolean strict) throws Exception {
+-		JSONAssert.assertNotEquals(expected, actual, strict);
++//		JSONAssert.assertNotEquals(expected, actual, strict);
+ 	}
+ 
+ }

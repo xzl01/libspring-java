@@ -1,0 +1,16 @@
+-----------------------------
+libspring-java for Debian
+-----------------------------
+
+*** Removal of functionnalities ***
+
+SpringFramework Debian package doesn't contains some of the functionnalities of
+upstream binary releases.
+
+Here is a list of excluded files regarding original content of SpringFramework.
+
+* spring-transaction
+  [non-free] IBM Websphere is non-free
+    org/springframework/transaction/jta/WebSphereUowTransactionManager.java
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Wed, 23 Sep 2009 20:30:00 +0200

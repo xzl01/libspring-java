@@ -1,0 +1,4 @@
+# Spring.js is only used by the tests and handled as a data file, the actual code doesn't matter (see WebAppResourceTests.java)
+libspring-java source: source-is-missing */Spring.js*
+libspring-java source: insane-line-length-in-source-file */Spring.js*
+libspring-java source: source-contains-prebuilt-javascript-object */Spring.js*
