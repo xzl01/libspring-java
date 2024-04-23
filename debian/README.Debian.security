@@ -1,0 +1,8 @@
+Important note
+==============
+
+The Spring Framework alias libspring-java in Debian is not intended to be used
+to develop web applications for production purposes. It is mainly required to
+build other packages. There will be no security support for the life time of a
+stable release. Only use it to build other Debian packages or in a trusted
+environment like your local network with trusted devices.

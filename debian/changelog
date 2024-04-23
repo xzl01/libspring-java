@@ -1,3 +1,17 @@
+libspring-java (4.3.30-2) unstable; urgency=medium
+
+  * Team upload.
+  * Depend on libtomcat10-java instead of libtomcat9-java.
+  * Add xmlbeans-4-ftbfs.patch and fix FTBFS with xmlbeans 4.
+    (Closes: #1011689)
+  * Ignore junit-bom and jboss-logging artifact.
+  * Ignore org.eclipse.persistence:jakarta.persistence.
+  * Install README.Debian.security and explain that libspring-java should be
+    only used for building other Debian packages or in a secured local
+    environment with trusted devices.
+
+ -- Markus Koschany <apo@debian.org>  Mon, 27 Feb 2023 21:50:50 +0100
+
 libspring-java (4.3.30-1) unstable; urgency=medium
 
   * Team upload.

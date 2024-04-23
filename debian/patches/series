@@ -19,3 +19,4 @@
 0051-reproducible-build-source-date.patch
 0052-no-jasperreports.patch
 0053-ignore-reactor.patch
+xmlbeans-4-ftbfs.patch

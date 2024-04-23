@@ -79,7 +79,7 @@ Build-Depends-Indep: bsh,
                      libservlet-api-java,
                      libtaglibs-standard-jstlel-java,
                      libtiles-java (>= 3.0),
-                     libtomcat9-java,
+                     libtomcat10-java,
                      libvelocity-tools-java (>= 2.0-3),
                      libwebjars-locator-java,
                      libwebjars-locator-core-java,
@@ -158,7 +158,7 @@ Recommends: libasm-java (>= 5.0),
             libgeronimo-validation-1.0-spec-java,
             libjodatime-java,
             libspring-instrument-java (= ${source:Version}),
-            libtomcat9-java
+            libtomcat10-java
 Suggests: bsh,
           groovy
 Description: modular Java/J2EE application framework - Context
